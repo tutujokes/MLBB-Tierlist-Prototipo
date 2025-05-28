@@ -16,6 +16,29 @@
     .card img { width: 64px; height: 64px; border-radius: 50%; }
     .card .name { font-weight: bold; margin-top: 0.5rem; }
     .card .rate { font-size: 0.8rem; color: #555; }
+    /* Estilização para os heróis principais */
+    #hero-list {
+      margin: 2rem auto;
+      max-width: 960px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      justify-content: center;
+    }
+    #hero-list div {
+      background: #e3e7ed;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 2px 6px #0001;
+    }
+    #hero-list img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 2px solid #ccc;
+      background: #fff;
+    }
   </style>
 </head>
 <body>
@@ -44,14 +67,34 @@
     </label>
   </header>
 
-  <!-- TESTE DE FETCH DIRETO NA TELA -->
+  <!-- Novo bloco para renderizar heróis principais -->
+  <div id="hero-list"></div>
+
   <script>
     fetch('https://mlbb-proxy.vercel.app/api/heroes')
-      .then(r => r.json())
-      .then(j => { document.body.innerHTML += "<pre style='color:green'>"+JSON.stringify(j,null,2)+"</pre>"; })
-      .catch(e => { document.body.innerHTML += "<pre style='color:red'>"+e+"</pre>"; });
+      .then(response => response.json())
+      .then(result => {
+        const records = result.data.records; // Correção aqui
+        console.log(records); // Só para visualizar se está funcionando
+
+        // Exemplo: Iterar e exibir nomes dos heróis principais
+        const container = document.getElementById('hero-list');
+        records.forEach(entry => {
+          const heroName = entry.data.main_hero.data.name;
+          const heroImg = entry.data.main_hero.data.head;
+
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <img src="${heroImg}" alt="${heroName}" width="100" />
+            <p>${heroName}</p>
+          `;
+          container.appendChild(div);
+        });
+      })
+      .catch(error => {
+        console.error("Erro ao carregar os dados da API", error);
+      });
   </script>
-  <!-- FIM DO TESTE -->
 
   <main id="app"></main>
   <script>
