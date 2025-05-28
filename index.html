@@ -57,7 +57,7 @@
       const role = roleSelect.value;
       const lane = laneSelect.value;
 
-      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&role=${role}&lane=${lane}&size=20&index=1`;
+      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&role=${role}&lane=${lane}&size=130&index=1`;
 
       fetch(url)
         .then(res => res.json())
@@ -84,7 +84,7 @@
     }
 
     function fetchTierList() {
-      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=rank&sort_field=win_rate&sort_order=desc&size=15`;
+      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=rank&sort_field=win_rate&sort_order=desc&size=130`;
 
       fetch(url)
         .then(res => res.json())
