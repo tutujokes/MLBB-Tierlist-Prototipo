@@ -43,6 +43,16 @@
       </select>
     </label>
   </header>
+
+  <!-- TESTE DE FETCH DIRETO NA TELA -->
+  <script>
+    fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rank/')
+      .then(r => r.json())
+      .then(j => { document.body.innerHTML += "<pre style='color:green'>"+JSON.stringify(j,null,2)+"</pre>"; })
+      .catch(e => { document.body.innerHTML += "<pre style='color:red'>"+e+"</pre>"; });
+  </script>
+  <!-- FIM DO TESTE -->
+
   <main id="app"></main>
   <script>
     const tiers = ['SS', 'S', 'A', 'B', 'C'];
