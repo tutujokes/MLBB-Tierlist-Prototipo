@@ -1,178 +1,129 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tier List - Mobile Legends</title>
+  <title>MLBB Tierlist Prototipo</title>
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: sans-serif; background: #fff; color: #333; }
-    header { padding: 1rem; background: #f8f8f8; text-align: center; border-bottom: 1px solid #ddd; }
-    select { padding: 0.5rem; margin: 0.5rem; }
-    .tier { margin: 2rem auto; max-width: 960px; }
-    .tier h2 { font-size: 1.5rem; margin-bottom: 1rem; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; }
-    .card { background: #f0f0f0; border-radius: 8px; padding: 0.5rem; text-align: center; }
-    .card img { width: 64px; height: 64px; border-radius: 50%; }
-    .card .name { font-weight: bold; margin-top: 0.5rem; }
-    .card .rate { font-size: 0.8rem; color: #555; }
-    /* Estilização para os heróis principais */
-    #hero-list {
-      margin: 2rem auto;
-      max-width: 960px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      justify-content: center;
-    }
-    #hero-list div {
-      background: #e3e7ed;
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
-      box-shadow: 0 2px 6px #0001;
-    }
-    #hero-list img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 2px solid #ccc;
-      background: #fff;
-    }
+    img { border-radius: 8px; }
+    .tier { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .tier div { text-align: center; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>Tier List de Heróis - Mobile Legends</h1>
-    <label>Função:
-      <select id="roleFilter">
-        <option value="Todos">Todas</option>
-        <option value="Tank">Tank</option>
-        <option value="Fighter">Lutador</option>
-        <option value="Assassin">Assassino</option>
-        <option value="Mage">Mago</option>
-        <option value="Marksman">Atirador</option>
-        <option value="Support">Suporte</option>
-      </select>
-    </label>
-    <label>Rota:
-      <select id="laneFilter">
-        <option value="Todos">Todas</option>
-        <option value="Gold">Ouro</option>
-        <option value="Exp">EXP</option>
-        <option value="Mid">Meio</option>
-        <option value="Roam">Rotação</option>
-        <option value="Jungle">Selva</option>
-      </select>
-    </label>
-  </header>
+  <h1>MLBB Tierlist por Win Rate</h1>
+  <h2>Tier SS</h2>
+  <div id="tier-ss" class="tier"></div>
+  <h2>Tier S</h2>
+  <div id="tier-s" class="tier"></div>
+  <h2>Tier A</h2>
+  <div id="tier-a" class="tier"></div>
 
-  <!-- Novo bloco para renderizar heróis principais -->
-  <div id="hero-list"></div>
+  <hr>
+  <h1>Filtrar por Função e Rota</h1>
+  <label for="role-select">Função:</label>
+  <select id="role-select">
+    <option value="TANK">Tank</option>
+    <option value="MAGE">Mage</option>
+    <option value="MARKSMAN">Marksman</option>
+    <option value="FIGHTER">Fighter</option>
+    <option value="ASSASSIN">Assassin</option>
+    <option value="SUPPORT">Support</option>
+  </select>
+
+  <label for="lane-select">Rota:</label>
+  <select id="lane-select">
+    <option value="TOP">Top</option>
+    <option value="MID">Mid</option>
+    <option value="BOTTOM">Bottom</option>
+    <option value="JUNGLE">Jungle</option>
+    <option value="ROAM">Roam</option>
+    <option value="GOLD">Gold</option>
+    <option value="EXP">EXP</option>
+  </select>
+
+  <div id="hero-list" class="tier"></div>
 
   <script>
-    fetch('https://mlbb-proxy.vercel.app/api/heroes')
-      .then(response => response.json())
-      .then(result => {
-        const records = result.data.records; // Correção aqui
-        console.log(records); // Só para visualizar se está funcionando
+    const roleSelect = document.getElementById('role-select');
+    const laneSelect = document.getElementById('lane-select');
+    const heroList = document.getElementById('hero-list');
 
-        // Exemplo: Iterar e exibir nomes dos heróis principais
-        const container = document.getElementById('hero-list');
-        records.forEach(entry => {
-          const heroName = entry.data.main_hero.data.name;
-          const heroImg = entry.data.main_hero.data.head;
+    roleSelect.addEventListener('change', fetchHeroes);
+    laneSelect.addEventListener('change', fetchHeroes);
 
-          const div = document.createElement('div');
-          div.innerHTML = `
-            <img src="${heroImg}" alt="${heroName}" width="100" />
-            <p>${heroName}</p>
-          `;
-          container.appendChild(div);
+    function fetchHeroes() {
+      const role = roleSelect.value;
+      const lane = laneSelect.value;
+
+      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&role=${role}&lane=${lane}&size=20&index=1`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(result => {
+          const records = result.data.records || [];
+          heroList.innerHTML = '';
+
+          records.forEach(entry => {
+            const name = entry.hero.data.name;
+            const img = entry.hero.data.head;
+
+            const div = document.createElement('div');
+            div.innerHTML = `
+              <img src="${img}" alt="${name}" width="100">
+              <p>${name}</p>
+            `;
+            heroList.appendChild(div);
+          });
+        })
+        .catch(error => {
+          console.error("Erro ao carregar heróis:", error);
+          heroList.innerHTML = '<p>Erro ao carregar heróis.</p>';
         });
-      })
-      .catch(error => {
-        console.error("Erro ao carregar os dados da API", error);
-      });
-  </script>
-
-  <main id="app"></main>
-  <script>
-    const tiers = ['SS', 'S', 'A', 'B', 'C'];
-    let allHeroes = [];
-
-    async function loadHeroes() {
-      try {
-        const res = await fetch('https://mlbb-proxy.vercel.app/api/heroes');
-        const json = await res.json();
-        allHeroes = json.data.map(h => ({
-          id: h.hero_id,
-          name: h.hero_name,
-          image: 'https://mlbb-stats.ridwaanhall.com' + h.hero_icon,
-          win: h.win_rate,
-          role: h.role || [],
-          lane: h.lane || [],
-          tier: h.tier
-        }));
-        render();
-      } catch (e) {
-        document.getElementById('app').innerHTML = '<p style="padding:2rem;text-align:center">Erro ao carregar os dados da API.</p>';
-      }
     }
 
-    function render() {
-      const role = document.getElementById('roleFilter').value;
-      const lane = document.getElementById('laneFilter').value;
-      const container = document.getElementById('app');
-      container.innerHTML = '';
+    function fetchTierList() {
+      const url = `https://mlbb-proxy.vercel.app/api/heroes?source=rank&sort_field=win_rate&sort_order=desc&size=15`;
 
-      tiers.forEach(tier => {
-        const section = document.createElement('section');
-        section.className = 'tier';
-        const title = document.createElement('h2');
-        title.textContent = `Tier ${tier}`;
-        section.appendChild(title);
+      fetch(url)
+        .then(res => res.json())
+        .then(result => {
+          const records = result.data.records || [];
 
-        const grid = document.createElement('div');
-        grid.className = 'grid';
+          document.getElementById('tier-ss').innerHTML = '';
+          document.getElementById('tier-s').innerHTML = '';
+          document.getElementById('tier-a').innerHTML = '';
 
-        const heroes = allHeroes.filter(h =>
-          h.tier === tier &&
-          (role === 'Todos' || h.role.some(r => r.includes(role))) &&
-          (lane === 'Todos' || h.lane.some(l => l.includes(lane)))
-        );
+          records.forEach((entry, index) => {
+            const hero = entry.data.main_hero.data;
+            const name = hero.name;
+            const img = hero.head;
+            const win = (entry.data.main_hero_win_rate * 100).toFixed(1);
 
-        heroes.forEach(hero => {
-          const card = document.createElement('div');
-          card.className = 'card';
+            const div = document.createElement('div');
+            div.innerHTML = `
+              <img src="${img}" alt="${name}" width="100">
+              <p>${name} - ${win}% WR</p>
+            `;
 
-          const img = document.createElement('img');
-          img.src = hero.image;
-          img.alt = hero.name;
-          card.appendChild(img);
-
-          const name = document.createElement('div');
-          name.className = 'name';
-          name.textContent = hero.name;
-          card.appendChild(name);
-
-          const rate = document.createElement('div');
-          rate.className = 'rate';
-          rate.textContent = `Taxa de vitória: ${(hero.win * 100).toFixed(1)}%`;
-          card.appendChild(rate);
-
-          grid.appendChild(card);
+            if (index < 5) {
+              document.getElementById('tier-ss').appendChild(div);
+            } else if (index < 10) {
+              document.getElementById('tier-s').appendChild(div);
+            } else {
+              document.getElementById('tier-a').appendChild(div);
+            }
+          });
+        })
+        .catch(error => {
+          console.error("Erro ao carregar tier list:", error);
         });
-
-        section.appendChild(grid);
-        container.appendChild(section);
-      });
     }
 
-    document.getElementById('roleFilter').addEventListener('change', render);
-    document.getElementById('laneFilter').addEventListener('change', render);
-
-    loadHeroes();
+    // Inicial
+    fetchTierList();
+    fetchHeroes();
   </script>
 </body>
 </html>
