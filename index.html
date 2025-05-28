@@ -8,6 +8,7 @@
     img { border-radius: 8px; }
     .tier { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
     .tier div { text-align: center; }
+    .filtros { margin-bottom: 20px; }
   </style>
 </head>
 <body>
@@ -21,27 +22,28 @@
 
   <hr>
   <h1>Filtrar por Função e Rota</h1>
-  <label for="role-select">Função:</label>
-  <select id="role-select">
-    <option value="">Todas</option>
-    <option value="tank">Tank</option>
-    <option value="mage">Mage</option>
-    <option value="marksman">Marksman</option>
-    <option value="fighter">Fighter</option>
-    <option value="assassin">Assassin</option>
-    <option value="support">Support</option>
-  </select>
+  <div class="filtros">
+    <label for="role-select">Função:</label>
+    <select id="role-select">
+      <option value="">Todas</option>
+      <option value="tank">Tank</option>
+      <option value="mage">Mage</option>
+      <option value="marksman">Marksman</option>
+      <option value="fighter">Fighter</option>
+      <option value="assassin">Assassin</option>
+      <option value="support">Support</option>
+    </select>
 
-  <label for="lane-select">Rota:</label>
-  <select id="lane-select">
-    <option value="">Todas</option>
-    <option value="mid">Mid</option>
-    <option value="exp">EXP</option>
-    <option value="gold">Gold</option>
-    <option value="jungle">Jungle</option>
-    <option value="roam">Roam</option>
-  </select>
-
+    <label for="lane-select">Rota:</label>
+    <select id="lane-select">
+      <option value="">Todas</option>
+      <option value="mid">Mid</option>
+      <option value="exp">EXP</option>
+      <option value="gold">Gold</option>
+      <option value="jungle">Jungle</option>
+      <option value="roam">Roam</option>
+    </select>
+  </div>
   <div id="hero-list" class="tier"></div>
 
   <script>
@@ -55,7 +57,6 @@
     function fetchHeroes() {
       const role = roleSelect.value;
       const lane = laneSelect.value;
-
       let url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&size=130&index=1`;
       if (role) url += `&role=${role}`;
       if (lane) url += `&lane=${lane}`;
@@ -63,12 +64,20 @@
       fetch(url)
         .then(res => res.json())
         .then(result => {
-          const records = result.data.records || [];
+          const records = (result.data && result.data.records) ? result.data.records : [];
           heroList.innerHTML = '';
 
+          if (records.length === 0) {
+            heroList.innerHTML = '<p>Nenhum herói encontrado para esse filtro.</p>';
+            return;
+          }
+
           records.forEach(entry => {
-            const name = entry.hero.data.name;
-            const img = entry.hero.data.head;
+            // O formato esperado é entry.hero.data.name/head
+            const heroData = entry.hero && entry.hero.data ? entry.hero.data : null;
+            if (!heroData) return;
+            const name = heroData.name;
+            const img = heroData.head;
 
             const div = document.createElement('div');
             div.innerHTML = `
@@ -90,7 +99,7 @@
       fetch(url)
         .then(res => res.json())
         .then(result => {
-          const records = result.data.records || [];
+          const records = (result.data && result.data.records) ? result.data.records : [];
 
           document.getElementById('tier-ss').innerHTML = '';
           document.getElementById('tier-s').innerHTML = '';
@@ -108,6 +117,7 @@
               <p>${name} - ${win}% WR</p>
             `;
 
+            // Ajuste os thresholds conforme quiser para os tiers
             if (win >= 54) {
               document.getElementById('tier-ss').appendChild(div);
             } else if (win >= 51) {
