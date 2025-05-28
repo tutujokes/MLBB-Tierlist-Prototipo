@@ -46,7 +46,7 @@
 
   <!-- TESTE DE FETCH DIRETO NA TELA -->
   <script>
-    fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rank/')
+    fetch('https://mlbb-proxy.vercel.app/api/heroes')
       .then(r => r.json())
       .then(j => { document.body.innerHTML += "<pre style='color:green'>"+JSON.stringify(j,null,2)+"</pre>"; })
       .catch(e => { document.body.innerHTML += "<pre style='color:red'>"+e+"</pre>"; });
@@ -60,7 +60,7 @@
 
     async function loadHeroes() {
       try {
-        const res = await fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rank/');
+        const res = await fetch('https://mlbb-proxy.vercel.app/api/heroes');
         const json = await res.json();
         allHeroes = json.data.map(h => ({
           id: h.hero_id,
