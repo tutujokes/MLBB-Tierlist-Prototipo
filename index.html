@@ -22,108 +22,110 @@
     <h1>Tier List de Heróis - Mobile Legends</h1>
     <label>Função:
       <select id="roleFilter">
-        <option value="Todos">Todos</option>
+        <option value="Todos">Todas</option>
         <option value="Tank">Tank</option>
-        <option value="Fighter">Fighter</option>
-        <option value="Assassin">Assassin</option>
-        <option value="Mage">Mage</option>
-        <option value="Marksman">Marksman</option>
-        <option value="Support">Support</option>
+        <option value="Fighter">Lutador</option>
+        <option value="Assassin">Assassino</option>
+        <option value="Mage">Mago</option>
+        <option value="Marksman">Atirador</option>
+        <option value="Support">Suporte</option>
       </select>
     </label>
     <label>Rota:
       <select id="laneFilter">
-        <option value="Todos">Todos</option>
-        <option value="Gold">Gold</option>
-        <option value="Exp">Exp</option>
-        <option value="Mid">Mid</option>
-        <option value="Roam">Roam</option>
-        <option value="Jungle">Jungle</option>
+        <option value="Todos">Todas</option>
+        <option value="Gold">Ouro</option>
+        <option value="Exp">EXP</option>
+        <option value="Mid">Meio</option>
+        <option value="Roam">Rotação</option>
+        <option value="Jungle">Selva</option>
       </select>
     </label>
-  </header>  <main id="app"></main>  <script>
+  </header>
+  <main id="app"></main>
+  <script>
     const tiers = ['SS', 'S', 'A', 'B', 'C'];
-    let allHeroes = [];
+    let allHeroes = [];async function loadHeroes() {
+  try {
+    const res = await fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rate/')
+    const data = await res.json()
+    allHeroes = data.data.map(h => ({
+      id: h.hero_id,
+      name: h.hero_name,
+      image: 'https://mlbb-stats.ridwaanhall.com' + h.hero_icon,
+      win: h.win_rate,
+      role: h.role || [],
+      lane: h.lane || [],
+      tier: getTier(h.win_rate)
+    }))
+    render()
+  } catch (e) {
+    document.getElementById('app').innerHTML = '<p style="padding:2rem;text-align:center">Erro de conexão com o servidor. Tente novamente mais tarde.</p>'
+  }
+}
 
-    async function loadHeroes() {
-      try {
-        const res = await fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rate/')
-        const data = await res.json()
-        allHeroes = data.data.map(h => ({
-          id: h.hero_id,
-          name: h.hero_name,
-          image: 'https://mlbb-stats.ridwaanhall.com' + h.hero_icon,
-          win: h.win_rate,
-          role: h.role,
-          lane: h.lane,
-          tier: getTier(h.win_rate)
-        }))
-        render()
-      } catch (e) {
-        document.getElementById('app').innerHTML = '<p style="padding:2rem;text-align:center">Erro ao carregar dados. Verifique a conexão.</p>'
-      }
-    }
+function getTier(win) {
+  if (win >= 0.54) return 'SS';
+  if (win >= 0.52) return 'S';
+  if (win >= 0.50) return 'A';
+  if (win >= 0.48) return 'B';
+  return 'C';
+}
 
-    function getTier(win) {
-      if (win >= 0.54) return 'SS';
-      if (win >= 0.52) return 'S';
-      if (win >= 0.50) return 'A';
-      if (win >= 0.48) return 'B';
-      return 'C';
-    }
+function render() {
+  const role = document.getElementById('roleFilter').value;
+  const lane = document.getElementById('laneFilter').value;
+  const container = document.getElementById('app');
+  container.innerHTML = '';
 
-    function render() {
-      const role = document.getElementById('roleFilter').value;
-      const lane = document.getElementById('laneFilter').value;
-      const container = document.getElementById('app');
-      container.innerHTML = '';
+  tiers.forEach(tier => {
+    const section = document.createElement('section');
+    section.className = 'tier';
+    const title = document.createElement('h2');
+    title.textContent = `Tier ${tier}`;
+    section.appendChild(title);
 
-      tiers.forEach(tier => {
-        const section = document.createElement('section');
-        section.className = 'tier';
-        const title = document.createElement('h2');
-        title.textContent = `Tier ${tier}`;
-        section.appendChild(title);
+    const grid = document.createElement('div');
+    grid.className = 'grid';
 
-        const grid = document.createElement('div');
-        grid.className = 'grid';
+    const heroes = allHeroes.filter(h =>
+      h.tier === tier &&
+      (role === 'Todos' || h.role.some(r => r.includes(role))) &&
+      (lane === 'Todos' || h.lane.some(l => l.includes(lane)))
+    );
 
-        const heroes = allHeroes.filter(h =>
-          h.tier === tier &&
-          (role === 'Todos' || h.role.includes(role)) &&
-          (lane === 'Todos' || h.lane.includes(lane))
-        );
+    heroes.forEach(hero => {
+      const card = document.createElement('div');
+      card.className = 'card';
 
-        heroes.forEach(hero => {
-          const card = document.createElement('div');
-          card.className = 'card';
+      const img = document.createElement('img');
+      img.src = hero.image;
+      img.alt = hero.name;
+      card.appendChild(img);
 
-          const img = document.createElement('img');
-          img.src = hero.image;
-          img.alt = hero.name;
-          card.appendChild(img);
+      const name = document.createElement('div');
+      name.className = 'name';
+      name.textContent = hero.name;
+      card.appendChild(name);
 
-          const name = document.createElement('div');
-          name.className = 'name';
-          name.textContent = hero.name;
-          card.appendChild(name);
+      const rate = document.createElement('div');
+      rate.className = 'rate';
+      rate.textContent = `Taxa de vitória: ${(hero.win * 100).toFixed(1)}%`;
+      card.appendChild(rate);
 
-          const rate = document.createElement('div');
-          rate.className = 'rate';
-          rate.textContent = `Win Rate: ${(hero.win * 100).toFixed(1)}%`;
-          card.appendChild(rate);
+      grid.appendChild(card);
+    });
 
-          grid.appendChild(card);
-        });
+    section.appendChild(grid);
+    container.appendChild(section);
+  });
+}
 
-        section.appendChild(grid);
-        container.appendChild(section);
-      });
-    }
+document.getElementById('roleFilter').addEventListener('change', render);
+document.getElementById('laneFilter').addEventListener('change', render);
 
-    document.getElementById('roleFilter').addEventListener('change', render);
-    document.getElementById('laneFilter').addEventListener('change', render);
+loadHeroes();
 
-    loadHeroes();
-  </script></body>
+  </script>
+</body>
 </html>
