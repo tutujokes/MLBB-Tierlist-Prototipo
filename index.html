@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,54 +23,48 @@
     <h1>Tier List de Heróis - Mobile Legends</h1>
     <label>Função:
       <select id="roleFilter">
-        <option value="Todos">Todos</option>
+        <option value="Todos">Todas</option>
         <option value="Tank">Tank</option>
-        <option value="Fighter">Fighter</option>
-        <option value="Assassin">Assassin</option>
-        <option value="Mage">Mage</option>
-        <option value="Marksman">Marksman</option>
-        <option value="Support">Support</option>
+        <option value="Fighter">Lutador</option>
+        <option value="Assassin">Assassino</option>
+        <option value="Mage">Mago</option>
+        <option value="Marksman">Atirador</option>
+        <option value="Support">Suporte</option>
       </select>
     </label>
     <label>Rota:
       <select id="laneFilter">
-        <option value="Todos">Todos</option>
-        <option value="Gold">Gold</option>
-        <option value="Exp">Exp</option>
-        <option value="Mid">Mid</option>
-        <option value="Roam">Roam</option>
-        <option value="Jungle">Jungle</option>
+        <option value="Todos">Todas</option>
+        <option value="Gold">Ouro</option>
+        <option value="Exp">EXP</option>
+        <option value="Mid">Meio</option>
+        <option value="Roam">Rotação</option>
+        <option value="Jungle">Selva</option>
       </select>
     </label>
-  </header>  <main id="app"></main>  <script>
+  </header>
+  <main id="app"></main>
+  <script>
     const tiers = ['SS', 'S', 'A', 'B', 'C'];
     let allHeroes = [];
 
     async function loadHeroes() {
       try {
-        const res = await fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rate/')
-        const data = await res.json()
-        allHeroes = data.data.map(h => ({
+        const res = await fetch('https://mlbb-stats.ridwaanhall.com/api/hero-rank/');
+        const json = await res.json();
+        allHeroes = json.data.map(h => ({
           id: h.hero_id,
           name: h.hero_name,
           image: 'https://mlbb-stats.ridwaanhall.com' + h.hero_icon,
           win: h.win_rate,
-          role: h.role,
-          lane: h.lane,
-          tier: getTier(h.win_rate)
-        }))
-        render()
+          role: h.role || [],
+          lane: h.lane || [],
+          tier: h.tier
+        }));
+        render();
       } catch (e) {
-        document.getElementById('app').innerHTML = '<p style="padding:2rem;text-align:center">Erro ao carregar dados. Verifique a conexão.</p>'
+        document.getElementById('app').innerHTML = '<p style="padding:2rem;text-align:center">Erro ao carregar os dados da API.</p>';
       }
-    }
-
-    function getTier(win) {
-      if (win >= 0.54) return 'SS';
-      if (win >= 0.52) return 'S';
-      if (win >= 0.50) return 'A';
-      if (win >= 0.48) return 'B';
-      return 'C';
     }
 
     function render() {
@@ -90,8 +85,8 @@
 
         const heroes = allHeroes.filter(h =>
           h.tier === tier &&
-          (role === 'Todos' || h.role.includes(role)) &&
-          (lane === 'Todos' || h.lane.includes(lane))
+          (role === 'Todos' || h.role.some(r => r.includes(role))) &&
+          (lane === 'Todos' || h.lane.some(l => l.includes(lane)))
         );
 
         heroes.forEach(hero => {
@@ -110,7 +105,7 @@
 
           const rate = document.createElement('div');
           rate.className = 'rate';
-          rate.textContent = `Win Rate: ${(hero.win * 100).toFixed(1)}%`;
+          rate.textContent = `Taxa de vitória: ${(hero.win * 100).toFixed(1)}%`;
           card.appendChild(rate);
 
           grid.appendChild(card);
@@ -125,5 +120,6 @@
     document.getElementById('laneFilter').addEventListener('change', render);
 
     loadHeroes();
-  </script></body>
+  </script>
+</body>
 </html>
