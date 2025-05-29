@@ -98,16 +98,20 @@
           const records = (result.data && result.data.records) ? result.data.records : [];
           heroList.innerHTML = '';
 
+          // Log para depuração
+          console.log("Records recebidos:", records);
+
           if (records.length === 0) {
             heroList.innerHTML = '<p>Nenhum herói encontrado para esse filtro.</p>';
             return;
           }
 
           records.forEach(entry => {
-            const heroData = entry.hero && entry.hero.data ? entry.hero.data : null;
-            if (!heroData) return;
-            const name = heroData.name;
-            const img = heroData.head;
+            const heroObj = entry.hero;
+            if (!heroObj || !heroObj.data || !heroObj.data.name || !heroObj.data.head) return;
+
+            const name = heroObj.data.name;
+            const img = heroObj.data.head;
 
             const div = document.createElement('div');
             div.innerHTML = `
