@@ -11,7 +11,7 @@
     .spa-view { display: none; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-    th { cursor: pointer; background: #f0f0f0; }
+    th { cursor: pointer; background: #f0f0f0; user-select: none; }
   </style>
 </head>
 <body>
@@ -64,6 +64,8 @@
 
   </main>  <script>
     const views = document.querySelectorAll('.spa-view');
+    let estatisticasCache = [];
+    let ordemAtual = { key: '', asc: true };
 
     function navigateSPA() {
       const hash = location.hash || '#tierlist';
@@ -87,7 +89,6 @@
     window.addEventListener('hashchange', navigateSPA);
     window.addEventListener('load', navigateSPA);
 
-    // Funções de carregamento (versões simples - você pode expandir depois)
     function carregarTierList() {
       fetch('https://mlbb-proxy.vercel.app/api/heroes?sort_field=win_rate&sort_order=desc&size=130')
         .then(res => res.json())
@@ -145,20 +146,47 @@
       fetch('https://mlbb-proxy.vercel.app/api/heroes/stat?rank=Mythical%20Honor&day=7')
         .then(res => res.json())
         .then(data => {
-          const tbody = document.querySelector('#tabela-estatisticas tbody');
-          tbody.innerHTML = '';
-          data.data.forEach(entry => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-              <td>${entry.hero.data.name}</td>
-              <td>${(entry.win_rate * 100).toFixed(1)}%</td>
-              <td>${(entry.pick_rate * 100).toFixed(1)}%</td>
-              <td>${(entry.ban_rate * 100).toFixed(1)}%</td>
-              <td>${entry.matches}</td>
-            `;
-            tbody.appendChild(tr);
-          });
+          estatisticasCache = data.data;
+          renderTabelaEstatisticas(estatisticasCache);
         });
     }
+
+    function renderTabelaEstatisticas(dados) {
+      const tbody = document.querySelector('#tabela-estatisticas tbody');
+      tbody.innerHTML = '';
+      dados.forEach(entry => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${entry.hero.data.name}</td>
+          <td>${(entry.win_rate * 100).toFixed(1)}%</td>
+          <td>${(entry.pick_rate * 100).toFixed(1)}%</td>
+          <td>${(entry.ban_rate * 100).toFixed(1)}%</td>
+          <td>${entry.matches}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.querySelectorAll('#tabela-estatisticas th').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.getAttribute('data-key');
+        if (ordemAtual.key === key) ordemAtual.asc = !ordemAtual.asc;
+        else ordemAtual = { key, asc: true };
+
+        const sorted = [...estatisticasCache].sort((a, b) => {
+          let valA = key === 'name' ? a.hero.data.name : a[key];
+          let valB = key === 'name' ? b.hero.data.name : b[key];
+          if (typeof valA === 'string') valA = valA.toLowerCase();
+          if (typeof valB === 'string') valB = valB.toLowerCase();
+          return ordemAtual.asc ? valA > valB ? 1 : -1 : valA < valB ? 1 : -1;
+        });
+
+        // Marcar a coluna clicada
+        document.querySelectorAll('#tabela-estatisticas th').forEach(h => h.textContent = h.textContent.replace(/[🔼🔽]/g, ''));
+        th.textContent += ordemAtual.asc ? ' 🔼' : ' 🔽';
+
+        renderTabelaEstatisticas(sorted);
+      });
+    });
   </script></body>
 </html>
