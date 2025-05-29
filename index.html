@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!-- (index.html SPA atualizado com fetch corrigido) --><!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,12 +32,6 @@
       <div id="tier-a" class="tier"></div>
     </section><section id="view-estatisticas" class="spa-view">
   <h2>Estatísticas</h2>
-  <label for="filtro-rank">Rank:</label>
-  <select id="filtro-rank"></select>
-
-  <label for="filtro-dia">Período:</label>
-  <select id="filtro-dia"></select>
-
   <table id="tabela-estatisticas">
     <thead>
       <tr>
@@ -110,7 +104,7 @@
     }
 
     function carregarListaHerois() {
-      fetch('https://mlbb-proxy.vercel.app/api/heroes/list')
+      fetch('https://mlbb-proxy.vercel.app/api/heroes?source=list')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('lista-herois');
@@ -128,7 +122,7 @@
       const id = params.get('id');
       if (!id) return;
 
-      fetch(`https://mlbb-proxy.vercel.app/api/heroes/detail?name=${id}`)
+      fetch(`https://mlbb-proxy.vercel.app/api/heroes?source=detail&name=${id}`)
         .then(res => res.json())
         .then(data => {
           const d = data.data;
@@ -143,7 +137,7 @@
     }
 
     function carregarEstatisticas() {
-      fetch('https://mlbb-proxy.vercel.app/api/heroes/stat?rank=Mythical%20Honor&day=7')
+      fetch('https://mlbb-proxy.vercel.app/api/heroes?source=rank&rank=Mythical Honor&days=7&size=130')
         .then(res => res.json())
         .then(data => {
           estatisticasCache = data.data;
@@ -181,7 +175,6 @@
           return ordemAtual.asc ? valA > valB ? 1 : -1 : valA < valB ? 1 : -1;
         });
 
-        // Marcar a coluna clicada
         document.querySelectorAll('#tabela-estatisticas th').forEach(h => h.textContent = h.textContent.replace(/[🔼🔽]/g, ''));
         th.textContent += ordemAtual.asc ? ' 🔼' : ' 🔽';
 
