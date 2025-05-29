@@ -98,16 +98,14 @@
           const records = (result.data && result.data.records) ? result.data.records : [];
           heroList.innerHTML = '';
 
-          // Log para depuração
-          console.log("Records recebidos:", records);
-
           if (records.length === 0) {
             heroList.innerHTML = '<p>Nenhum herói encontrado para esse filtro.</p>';
             return;
           }
 
           records.forEach(entry => {
-            const heroObj = entry.data?.hero?.data;
+            // Compatível com ambos os padrões de resposta
+            const heroObj = entry.hero?.data || entry.data?.hero?.data;
             if (!heroObj || !heroObj.name || !heroObj.head) return;
 
             const name = heroObj.name;
