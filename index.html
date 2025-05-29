@@ -13,6 +13,14 @@
 </head>
 <body>
   <h1>MLBB Tierlist por Win Rate</h1>
+  
+  <!-- Novo select para o modo de exibição -->
+  <label for="view-select">Modo de exibição:</label>
+  <select id="view-select">
+    <option value="tierlist">Tierlist por Win Rate</option>
+    <option value="filter">Filtrar por Função e Rota</option>
+  </select>
+
   <h2>Tier SS</h2>
   <div id="tier-ss" class="tier"></div>
   <h2>Tier S</h2>
@@ -33,7 +41,6 @@
       <option value="assassin">Assassin</option>
       <option value="support">Support</option>
     </select>
-
     <label for="lane-select">Rota:</label>
     <select id="lane-select">
       <option value="">Todas</option>
@@ -51,6 +58,30 @@
     const laneSelect = document.getElementById('lane-select');
     const heroList = document.getElementById('hero-list');
 
+    // Elementos para alternar exibição
+    const viewSelect = document.getElementById('view-select');
+    const tierListSection = [
+      ...document.querySelectorAll('h2'), 
+      document.getElementById('tier-ss'), 
+      document.getElementById('tier-s'), 
+      document.getElementById('tier-a')
+    ];
+    const filtros = document.querySelector('.filtros');
+
+    // Alternância do modo de exibição
+    viewSelect.addEventListener('change', () => {
+      const mode = viewSelect.value;
+      if (mode === 'tierlist') {
+        tierListSection.forEach(e => e.style.display = 'block');
+        filtros.style.display = 'none';
+        heroList.style.display = 'none';
+      } else {
+        tierListSection.forEach(e => e.style.display = 'none');
+        filtros.style.display = 'block';
+        heroList.style.display = 'flex';
+      }
+    });
+
     roleSelect.addEventListener('change', fetchHeroes);
     laneSelect.addEventListener('change', fetchHeroes);
 
@@ -60,9 +91,6 @@
       let url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&size=130&index=1`;
       if (role) url += `&role=${role}`;
       if (lane) url += `&lane=${lane}`;
-
-      // Debug: veja a URL chamada no console!
-      console.log("URL chamada:", url);
 
       fetch(url)
         .then(res => res.json())
@@ -76,10 +104,6 @@
           }
 
           records.forEach(entry => {
-            // Debug: veja cada entry no console
-            // console.log(entry);
-
-            // O formato correto da API hero-position: entry.hero.data.name/head
             const heroData = entry.hero && entry.hero.data ? entry.hero.data : null;
             if (!heroData) return;
             const name = heroData.name;
@@ -122,7 +146,6 @@
               <p>${name} - ${win}% WR</p>
             `;
 
-            // Ajuste os thresholds conforme quiser para os tiers
             if (win >= 54) {
               document.getElementById('tier-ss').appendChild(div);
             } else if (win >= 51) {
@@ -137,9 +160,16 @@
         });
     }
 
-    // Inicial
-    fetchTierList();
-    fetchHeroes();
+    // Inicialização: modo padrão 'tierlist'
+    window.onload = () => {
+      fetchTierList();
+      fetchHeroes();
+      // Exibe apenas tierlist inicialmente
+      viewSelect.value = 'tierlist';
+      tierListSection.forEach(e => e.style.display = 'block');
+      filtros.style.display = 'none';
+      heroList.style.display = 'none';
+    };
   </script>
 </body>
 </html>
