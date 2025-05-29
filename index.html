@@ -107,11 +107,11 @@
           }
 
           records.forEach(entry => {
-            const heroObj = entry.hero;
-            if (!heroObj || !heroObj.data || !heroObj.data.name || !heroObj.data.head) return;
+            const heroObj = entry.data?.hero?.data;
+            if (!heroObj || !heroObj.name || !heroObj.head) return;
 
-            const name = heroObj.data.name;
-            const img = heroObj.data.head;
+            const name = heroObj.name;
+            const img = heroObj.head;
 
             const div = document.createElement('div');
             div.innerHTML = `
