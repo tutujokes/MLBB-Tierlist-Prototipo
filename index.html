@@ -1,177 +1,164 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MLBB Tierlist Prototipo</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLBB Tier List</title>
   <style>
-    img { border-radius: 8px; }
+    body { font-family: sans-serif; margin: 20px; }
+    nav a { margin-right: 10px; }
     .tier { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
-    .tier div { text-align: center; }
-    .filtros { margin-bottom: 20px; }
+    .tier div { text-align: center; width: 100px; }
+    .spa-view { display: none; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { cursor: pointer; background: #f0f0f0; }
   </style>
 </head>
 <body>
-  <h1>MLBB Tierlist por Win Rate</h1>
-  
-  <!-- Novo select para o modo de exibição -->
-  <label for="view-select">Modo de exibição:</label>
-  <select id="view-select">
-    <option value="tierlist">Tierlist por Win Rate</option>
-    <option value="filter">Filtrar por Função e Rota</option>
-  </select>
+  <header>
+    <h1>Mobile Legends Tier List</h1>
+    <nav>
+      <a href="#tierlist">Tier List</a>
+      <a href="#estatisticas">Estatísticas</a>
+      <a href="#herois">Heróis</a>
+    </nav>
+  </header>  <main>
+    <section id="view-tierlist" class="spa-view">
+      <h2>Tier SS</h2>
+      <div id="tier-ss" class="tier"></div>
+      <h2>Tier S</h2>
+      <div id="tier-s" class="tier"></div>
+      <h2>Tier A</h2>
+      <div id="tier-a" class="tier"></div>
+    </section><section id="view-estatisticas" class="spa-view">
+  <h2>Estatísticas</h2>
+  <label for="filtro-rank">Rank:</label>
+  <select id="filtro-rank"></select>
 
-  <h2>Tier SS</h2>
-  <div id="tier-ss" class="tier"></div>
-  <h2>Tier S</h2>
-  <div id="tier-s" class="tier"></div>
-  <h2>Tier A</h2>
-  <div id="tier-a" class="tier"></div>
+  <label for="filtro-dia">Período:</label>
+  <select id="filtro-dia"></select>
 
-  <hr>
-  <h1>Filtrar por Função e Rota</h1>
-  <div class="filtros">
-    <label for="role-select">Função:</label>
-    <select id="role-select">
-      <option value="">Todas</option>
-      <option value="tank">Tank</option>
-      <option value="mage">Mage</option>
-      <option value="marksman">Marksman</option>
-      <option value="fighter">Fighter</option>
-      <option value="assassin">Assassin</option>
-      <option value="support">Support</option>
-    </select>
-    <label for="lane-select">Rota:</label>
-    <select id="lane-select">
-      <option value="">Todas</option>
-      <option value="mid">Mid</option>
-      <option value="exp">EXP</option>
-      <option value="gold">Gold</option>
-      <option value="jungle">Jungle</option>
-      <option value="roam">Roam</option>
-    </select>
-  </div>
-  <div id="hero-list" class="tier"></div>
+  <table id="tabela-estatisticas">
+    <thead>
+      <tr>
+        <th data-key="name">Nome</th>
+        <th data-key="win_rate">Win Rate</th>
+        <th data-key="pick_rate">Pick Rate</th>
+        <th data-key="ban_rate">Ban Rate</th>
+        <th data-key="matches">Partidas</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
 
-  <script>
-    const roleSelect = document.getElementById('role-select');
-    const laneSelect = document.getElementById('lane-select');
-    const heroList = document.getElementById('hero-list');
+<section id="view-herois" class="spa-view">
+  <h2>Lista de Heróis</h2>
+  <div id="lista-herois" class="tier"></div>
+</section>
 
-    // Elementos para alternar exibição
-    const viewSelect = document.getElementById('view-select');
-    const tierListSection = [
-      ...document.querySelectorAll('h2'), 
-      document.getElementById('tier-ss'), 
-      document.getElementById('tier-s'), 
-      document.getElementById('tier-a')
-    ];
-    const filtros = document.querySelector('.filtros');
+<section id="view-heroi" class="spa-view">
+  <h2>Detalhes do Herói</h2>
+  <div id="detalhes-heroi"></div>
+</section>
 
-    // Alternância do modo de exibição
-    viewSelect.addEventListener('change', () => {
-      const mode = viewSelect.value;
-      if (mode === 'tierlist') {
-        tierListSection.forEach(e => e.style.display = 'block');
-        filtros.style.display = 'none';
-        heroList.style.display = 'none';
+  </main>  <script>
+    const views = document.querySelectorAll('.spa-view');
+
+    function navigateSPA() {
+      const hash = location.hash || '#tierlist';
+      views.forEach(view => view.style.display = 'none');
+
+      if (hash.startsWith('#heroi')) {
+        document.getElementById('view-heroi').style.display = 'block';
+        carregarDetalhesHeroi();
+      } else if (hash === '#estatisticas') {
+        document.getElementById('view-estatisticas').style.display = 'block';
+        carregarEstatisticas();
+      } else if (hash === '#herois') {
+        document.getElementById('view-herois').style.display = 'block';
+        carregarListaHerois();
       } else {
-        tierListSection.forEach(e => e.style.display = 'none');
-        filtros.style.display = 'block';
-        heroList.style.display = 'flex';
+        document.getElementById('view-tierlist').style.display = 'block';
+        carregarTierList();
       }
-    });
-
-    roleSelect.addEventListener('change', fetchHeroes);
-    laneSelect.addEventListener('change', fetchHeroes);
-
-    function fetchHeroes() {
-      const role = roleSelect.value;
-      const lane = laneSelect.value;
-      let url = `https://mlbb-proxy.vercel.app/api/heroes?source=position&size=130&index=1`;
-      if (role) url += `&role=${role}`;
-      if (lane) url += `&lane=${lane}`;
-
-      fetch(url)
-        .then(res => res.json())
-        .then(result => {
-          const records = (result.data && result.data.records) ? result.data.records : [];
-          heroList.innerHTML = '';
-
-          if (records.length === 0) {
-            heroList.innerHTML = '<p>Nenhum herói encontrado para esse filtro.</p>';
-            return;
-          }
-
-          records.forEach(entry => {
-            // Compatível com ambos os padrões de resposta
-            const heroObj = entry.hero?.data || entry.data?.hero?.data;
-            if (!heroObj || !heroObj.name || !heroObj.head) return;
-
-            const name = heroObj.name;
-            const img = heroObj.head;
-
-            const div = document.createElement('div');
-            div.innerHTML = `
-              <img src="${img}" alt="${name}" width="100">
-              <p>${name}</p>
-            `;
-            heroList.appendChild(div);
-          });
-        })
-        .catch(error => {
-          console.error("Erro ao carregar heróis:", error);
-          heroList.innerHTML = '<p>Erro ao carregar heróis.</p>';
-        });
     }
 
-    function fetchTierList() {
-      const url = `https://mlbb-proxy.vercel.app/api/heroes?sort_field=win_rate&sort_order=desc&size=130`;
-      fetch(url)
-        .then(res => res.json())
-        .then(result => {
-          const records = (result.data && result.data.records) ? result.data.records : [];
+    window.addEventListener('hashchange', navigateSPA);
+    window.addEventListener('load', navigateSPA);
 
+    // Funções de carregamento (versões simples - você pode expandir depois)
+    function carregarTierList() {
+      fetch('https://mlbb-proxy.vercel.app/api/heroes?sort_field=win_rate&sort_order=desc&size=130')
+        .then(res => res.json())
+        .then(data => {
+          const records = data.data.records;
           document.getElementById('tier-ss').innerHTML = '';
           document.getElementById('tier-s').innerHTML = '';
           document.getElementById('tier-a').innerHTML = '';
-
-          records.forEach((entry) => {
+          records.forEach(entry => {
             const hero = entry.data.main_hero.data;
-            const name = hero.name;
-            const img = hero.head;
             const win = (entry.data.main_hero_win_rate * 100).toFixed(1);
-
             const div = document.createElement('div');
-            div.innerHTML = `
-              <img src="${img}" alt="${name}" width="100">
-              <p>${name} - ${win}% WR</p>
-            `;
-
-            if (win >= 54) {
-              document.getElementById('tier-ss').appendChild(div);
-            } else if (win >= 51) {
-              document.getElementById('tier-s').appendChild(div);
-            } else {
-              document.getElementById('tier-a').appendChild(div);
-            }
+            div.innerHTML = `<img src="${hero.head}" width="80"><br>${hero.name}`;
+            if (win >= 54) document.getElementById('tier-ss').appendChild(div);
+            else if (win >= 51) document.getElementById('tier-s').appendChild(div);
+            else document.getElementById('tier-a').appendChild(div);
           });
-        })
-        .catch(error => {
-          console.error("Erro ao carregar tier list:", error);
         });
     }
 
-    // Inicialização: modo padrão 'tierlist'
-    window.onload = () => {
-      fetchTierList();
-      fetchHeroes();
-      // Exibe apenas tierlist inicialmente
-      viewSelect.value = 'tierlist';
-      tierListSection.forEach(e => e.style.display = 'block');
-      filtros.style.display = 'none';
-      heroList.style.display = 'none';
-    };
-  </script>
-</body>
+    function carregarListaHerois() {
+      fetch('https://mlbb-proxy.vercel.app/api/heroes/list')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('lista-herois');
+          container.innerHTML = '';
+          data.data.forEach(hero => {
+            const div = document.createElement('div');
+            div.innerHTML = `<a href="#heroi?id=${hero.name}"><img src="${hero.head}" width="80"><br>${hero.name}</a>`;
+            container.appendChild(div);
+          });
+        });
+    }
+
+    function carregarDetalhesHeroi() {
+      const params = new URLSearchParams(location.hash.split('?')[1]);
+      const id = params.get('id');
+      if (!id) return;
+
+      fetch(`https://mlbb-proxy.vercel.app/api/heroes/detail?name=${id}`)
+        .then(res => res.json())
+        .then(data => {
+          const d = data.data;
+          document.getElementById('detalhes-heroi').innerHTML = `
+            <h3>${d.name}</h3>
+            <img src="${d.head}" width="100">
+            <p>Função: ${d.role}</p>
+            <p>Lane: ${d.lane}</p>
+            <p>Dificuldade: ${d.difficulty}</p>
+          `;
+        });
+    }
+
+    function carregarEstatisticas() {
+      fetch('https://mlbb-proxy.vercel.app/api/heroes/stat?rank=Mythical%20Honor&day=7')
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector('#tabela-estatisticas tbody');
+          tbody.innerHTML = '';
+          data.data.forEach(entry => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${entry.hero.data.name}</td>
+              <td>${(entry.win_rate * 100).toFixed(1)}%</td>
+              <td>${(entry.pick_rate * 100).toFixed(1)}%</td>
+              <td>${(entry.ban_rate * 100).toFixed(1)}%</td>
+              <td>${entry.matches}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+  </script></body>
 </html>
